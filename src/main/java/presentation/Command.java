@@ -1,29 +1,34 @@
 package presentation;
 
 import function.LoginSampleException;
+import java.io.IOException;
 import java.util.HashMap;
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-abstract class Command {
+public abstract class Command {
 
     private static HashMap<String, Command> commands;
 
-    private static void initCommands() {
+    public abstract void execute(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException, LoginSampleException;
+
+    public static Command from(HttpServletRequest request)
+    {
+        Command c;
+        
+        String origin = request.getParameter("command");
+        
+        HashMap<String, Command> commands;
+
         commands = new HashMap<>();
-        commands.put( "login", new Login() );
-        commands.put( "register", new Register() );
-    }
+        commands.put("login", new CommandLogin());
+        commands.put("register", new CommandRegister());
+        commands.put("mainPage", new CommandMainPage());
 
-    static Command from( HttpServletRequest request ) {
-        String commandName = request.getParameter( "command" );
-        if ( commands == null ) {
-            initCommands();
-        }
-        return commands.getOrDefault(commandName, new UnknownCommand() );
+        c = commands.getOrDefault(origin, new CommandUnknownCommand());
+        
+        return c;
     }
-
-    abstract String execute( HttpServletRequest request, HttpServletResponse response ) 
-            throws LoginSampleException;
 
 }
